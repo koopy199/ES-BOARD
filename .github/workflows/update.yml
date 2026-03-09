@@ -1,0 +1,37 @@
+name: Weekly News Automation
+
+# 언제 실행할지 타이머 설정
+on:
+  schedule:
+    # 한국 시간 기준 매주 월요일 오전 8시 (UTC 기준 일요일 23시)
+    - cron: '0 0 * * 1'
+  workflow_dispatch: # 우리가 원할 때 수동으로 버튼을 눌러 실행할 수 있게 해주는 마법의 주문입니다.
+
+jobs:
+  run-python-code:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 로봇이 HTML 파일을 만들어서 저장할 수 있도록 권한을 줍니다.
+
+    steps:
+    - name: 내 창고 파일 가져오기
+      uses: actions/checkout@v3
+
+    - name: 파이썬 설치하기
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 인터넷 문서 읽는 도구(라이브러리) 설치하기
+      run: pip install requests beautifulsoup4 lxml
+
+    - name: 파이썬 코드 실행하기!
+      run: python main.py
+
+    - name: 만들어진 HTML 파일 깃허브에 저장하기
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add weekly_news.html
+        git commit -m "매주 월요일 뉴스 업데이트 완료" || echo "변경사항 없음"
+        git push
